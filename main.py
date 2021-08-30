@@ -17,28 +17,38 @@ import vdf
 class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Steam Workshop Utility')
-        self.objects = []
-        self.gui_MainMenu()
-        self.vdfloc = ''
-        self.data = {}
-        self.parsed = None
-        self.vdf = None
-        self.usr = tk.StringVar()
-        self.pwd = tk.StringVar()
-        self.auth = tk.StringVar()
+
+        # Name of the new mod
+        self.modname = None
+
+        # GUI Storage
+        self.data = {}    # To be read
+
+        # VDF Data
+        self.vdfloc = ''   # Location
+        self.vdf = None    # Workshop Data
+        self.parsed = None # Full VDF Data
+
+        # Steamcmd
         self.scmd = None
 
-        self['bg'] = '#5f7b4d'
+        # Stores entry labels for uploading
+        self.usr =  tk.StringVar()
+        self.pwd =  tk.StringVar()
+        self.auth = tk.StringVar()
 
-        self.modname = None
+        # Window Stuff
+        self['bg'] = '#5f7b4d'
+        self.title('Steam Workshop Utility')
+
+        self.gui_MainMenu()
 
     def gui_MainMenu(self):
         self.clear_frame()
-        self.objects.append(self.grn_btn(self, text="New Mod", command=self.gui_New, highlightbackground='#72a84f'))
-        self.objects.append(self.grn_btn(self, text="Load Mod", command=self.load, highlightbackground='#72a84f'))
-        self.objects.append(self.grn_btn(self, text="Exit", command=self.close, highlightbackground='#72a84f'))
-        self.render(size='100x120')
+        self.grn_btn(self, text="New Mod", command=self.gui_New).grid(row=0)
+        self.grn_btn(self, text="Load Mod", command=self.load).grid(row=1)
+        self.grn_btn(self, text="Exit", command=self.close).grid(row=2)
+        self.geometry('100x120')
 
     def gui_vdfEditor(self):
         self.clear_frame()
@@ -132,8 +142,7 @@ class GUI(tk.Tk):
         saveb.pack(side=tk.BOTTOM, anchor=tk.E)
         uplb.pack(side=tk.BOTTOM, anchor=tk.E)
 
-
-        self.render(size='800x700')
+        self.geometry('800x700')
 
     def gui_New(self):
         self.clear_frame()
@@ -151,7 +160,7 @@ class GUI(tk.Tk):
 
         self.grn_btn(self, text="Create", command=create).place(x=10, y=35)
         self.grn_btn(command=self.gui_vdfEditor, text='Back').place(x=85, y=35)
-        self.render(size='260x80')
+        self.geometry('260x80')
 
     def gui_Upload(self):
         self.clear_frame()
@@ -169,7 +178,7 @@ class GUI(tk.Tk):
         tk.Entry(textvariable=self.auth, bg='#85a76f', highlightbackground='#86c45e').grid(row=2, column=1)
         self.grn_btn(command=self.finish, text='Upload').grid(row=3)
         self.grn_btn(command=self.gui_vdfEditor, text='Back').grid(row=3, column=1)
-        self.render(size='200x120')
+        self.geometry('200x120')
 
     def finish(self):
         subprocess.run([self.scmd.steamcmd_exe, f'+login {self.usr.get()} {self.pwd.get()} {self.auth.get()}', '+workshop_build_item', self.vdfloc, '+quit'])
@@ -200,22 +209,15 @@ class GUI(tk.Tk):
             self.gui_vdfEditor()
 
     def grn_btn(self, *args, **kwargs):
-        return tk.Button(*args, **kwargs, bg='#5f7b4d')
-
-    def render(self, size='800x1000'):
-        self.geometry(size)
-        for row, obj in enumerate(self.objects):
-            obj.grid(row=row, pady=1)
+        return tk.Button(*args, **kwargs, bg='#5f7b4d', highlightbackground='#72a84f')
 
     def clear_frame(self):
         for obj in self.winfo_children():
             obj.destroy()
-        self.objects = []
 
 OSTypes = {
     'WINDOWS': 'win32',
     'LINUX': 'linux',
-    'MACOS': 'darwin' # not supported but is in there
 }
 
 platform = sys.platform
@@ -228,9 +230,8 @@ for OS in OSTypes:
         print(f'Detected OS: {OS}')
     
 if detected_platform == None:
-    # FreeBSD Cygwin Aix
+    # FreeBSD Cygwin Aix MacOS
     print(f'Unsupported OS: {sys.platform}')
     exit()
 
-gui = GUI()
-gui.mainloop()
+GUI().mainloop()

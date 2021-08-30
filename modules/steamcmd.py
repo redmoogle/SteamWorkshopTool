@@ -3,7 +3,6 @@ import os
 import platform
 import zipfile
 import tarfile
-import subprocess
 
 import vdf
 
