@@ -5,60 +5,172 @@ File that runs all the things
 import os
 import sys
 from threading import Timer
+import subprocess
+import shutil
 
 import tkinter as tk
 from tkinter.filedialog import askdirectory
 
-from pysteamcmdwrapper import SteamCMD, SteamCMDException
+from modules import Steamcmd, SteamcmdException
 import vdf
 
 class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry('1500x1000')
         self.objects = []
         self.gui_MainMenu()
         self.vdfloc = ''
+        self.data = {}
+        self.parsed = None
+        self.vdf = None
+        self.usr = tk.StringVar()
+        self.pwd = tk.StringVar()
+        self.auth = tk.StringVar()
+        self.scmd = None
 
-    def win_update(self):
-        pass
+        self['bg'] = '#5f7b4d'
+
+        self.modname = None
 
     def gui_MainMenu(self):
         self.clear_frame()
         self.title = 'Steam Worshop Utility'
-        self.objects.append(tk.Button(self, text="New Mod", command=self.gui_NewStage1))
-        self.objects.append(tk.Button(self, text="Load Mod", command=self.gui_LoadStage1))
-        self.objects.append(tk.Button(self, text="Exit", command=self.close))
-        self.render()
+        self.objects.append(self.grn_btn(self, text="New Mod", command=self.gui_New, highlightbackground='#72a84f'))
+        self.objects.append(self.grn_btn(self, text="Load Mod", command=self.load, highlightbackground='#72a84f'))
+        self.objects.append(self.grn_btn(self, text="Exit", command=self.close, highlightbackground='#72a84f'))
+        self.render(size='100x120')
 
-    def gui_LoadStage1(self):
-        self.clear_frame()
-        self.title = 'Load Workshop Mod'
-        self.objects.append(tk.Button(self, text="Open Mod Folder", command=self.load))
-        self.objects.append(tk.Button(self, text="Back", command=self.gui_MainMenu))
-        self.render()
-
-    def gui_LoadStage2(self):
+    def gui_vdfEditor(self):
         self.clear_frame()
         self.title = 'Modify Mod'
+        self.data = {}
+
+        visibility = {0:"Public", 1:"Friends Only", 2: "Private"}
+        visibility_rev = {"Public": 0, "Friends Only": 1, "Private": 2}
+
         with open(self.vdfloc) as vdffile:
-            parsed = vdf.parse(vdffile)['workshopitem']
-        
-        print(parsed)
-        tk.Label(text='Workshop Description').grid(row=0,column=0)
-        txt = tk.Text(width=50, height=55)
-        txt.insert('end', parsed['description'])
-        txt.grid(row=2,column=0)
-        tk.Label(text='App-ID').grid(row=0,column=2)
-        tk.Entry(textvariable=parsed['appid']).grid(row=2,column=2)
+            self.vdf = vdf.parse(vdffile)
+            self.parsed = self.vdf['workshopitem']
 
-        self.render()
+        visval = visibility[int(self.parsed['visibility'])]
+        def upd_visval(selection):
+            visval = visibility_rev[selection]
+            self.parsed['visibility'] = visval
 
-    def gui_NewStage1(self):
-        return
+        # Workshop Desc
+        tk.Label(text='Workshop Description', bg='#5f7b4d').place(x=10, y=10)
+        modDesc = tk.Text(width=50, height=39)
 
-    def gui_NewStage2(self):
-        pass
+        tk.Label(text='App-ID', bg='#5f7b4d').place(x=450, y=10)
+        appID = tk.Entry()
+
+        tk.Label(text='File ID', bg='#5f7b4d').place(x=450, y=55)
+        fileID = tk.Entry()
+
+        tk.Label(text='Title', bg='#5f7b4d').place(x=450, y=100)
+        modTitle = tk.Entry(width=30)
+
+        tk.Label(text='Visibility', bg='#5f7b4d').place(x=450, y=145)
+        visibilityMenu = tk.OptionMenu(self, tk.StringVar(value=visval), *visibility_rev.keys(), command=upd_visval)
+
+        tk.Label(text='Image Path', bg='#5f7b4d').place(x=450, y=200)
+        previewPath = tk.Entry(width=30)
+
+        tk.Label(text='Mod Path', bg='#5f7b4d').place(x=450, y=250)
+        modPath = tk.Entry(width=30)
+
+        self.data['description'] = modDesc
+        self.data['appid'] = appID
+        self.data['publishedfileid'] = fileID
+        self.data['title'] = modTitle
+        self.data['previewfile'] = previewPath
+        self.data['contentfolder'] = modPath
+
+        for key in self.data:
+            obj = self.data[key]
+            obj['bg'] = '#85a76f'
+            obj['highlightbackground'] = '#86c45e'
+
+        modDesc.insert('end', self.parsed['description'])
+        appID.insert(0, self.parsed['appid'])
+        fileID.insert(0, self.parsed['publishedfileid'])
+        modTitle.insert(0, self.parsed['title'])
+        previewPath.insert(0, self.parsed['previewfile'])
+        modPath.insert(0, self.parsed['contentfolder'])
+
+        modDesc.place(x=10, y=30)
+        appID.place(x=450, y=30)
+        fileID.place(x=450, y=75)
+        modTitle.place(x=450, y=120)
+        visibilityMenu.config(width=20, bg='#5f7b4d', highlightbackground='#86c45e')
+        visibilityMenu.place(x=450, y=165)
+        previewPath.place(x=450, y=225)
+        modPath.place(x=450, y=270)
+
+        def save():
+            for dataobj in self.data:
+                obj = self.data[dataobj]
+                if isinstance(obj, tk.Text):
+                    dat = self.data[dataobj].get('1.0', tk.END)
+                else:
+                    dat = self.data[dataobj].get()
+                self.parsed[dataobj] = dat
+            with open(self.vdfloc, mode='w+') as vdffile:
+                self.vdf['workshopitem'] = self.parsed
+                vdf.dump(self.vdf, vdffile, pretty=False, escaped=False)
+            print('Saved VDF')
+            self.gui_vdfEditor()
+
+        backb = self.grn_btn(self, text="Back", command=self.gui_MainMenu)
+        saveb = self.grn_btn(self, text="Save", command=save)
+        uplb = self.grn_btn(self, text="Upload", command=self.gui_Upload)
+
+        backb.pack(side=tk.BOTTOM, anchor=tk.E)
+        saveb.pack(side=tk.BOTTOM, anchor=tk.E)
+        uplb.pack(side=tk.BOTTOM, anchor=tk.E)
+
+
+        self.render(size='800x700')
+
+    def gui_New(self):
+        self.clear_frame()
+
+        tk.Label(self, text='Mod Name', bg='#5f7b4d').grid(row=0,column=0)
+        self.modname = tk.Entry(highlightbackground='#86c45e', bg='#85a76f')
+        self.modname.grid(row=0,column=1)
+
+        def create():
+            _moddir = self.modname.get().strip(' ')
+            os.mkdir(_moddir)
+            shutil.copy('./vdf_template.vdf', f'{_moddir}/{_moddir}.vdf')
+            self.vdfloc = f'{_moddir}/{_moddir}.vdf'
+            self.gui_vdfEditor()
+
+        self.grn_btn(self, text="Create", command=create).grid(row=1)
+        self.render(size='300x300')
+
+    def gui_Upload(self):
+        self.clear_frame()
+        self.scmd = Steamcmd('./')
+        try:
+            self.scmd.install()
+        except SteamcmdException:
+            print('SteamCMD Already Installed')
+
+        tk.Label(self, text='Username', bg='#5f7b4d').grid(row=0)
+        tk.Label(self, text='Password', bg='#5f7b4d').grid(row=1)
+        tk.Label(self, text='Auth Code', bg='#5f7b4d').grid(row=2)
+        tk.Entry(textvariable=self.usr, bg='#85a76f', highlightbackground='#86c45e').grid(row=0, column=1)
+        tk.Entry(textvariable=self.pwd, show=False, bg='#85a76f', highlightbackground='#86c45e').grid(row=1, column=1)
+        tk.Entry(textvariable=self.auth, bg='#85a76f', highlightbackground='#86c45e').grid(row=2, column=1)
+        self.grn_btn(command=self.finish, text='Upload').grid(row=3)
+        self.grn_btn(command=self.gui_vdfEditor, text='Back').grid(row=3, column=1)
+        self.render(size='200x120')
+
+    def finish(self):
+        subprocess.run([self.scmd.steamcmd_exe, f'+login {self.usr.get()} {self.pwd.get()} {self.auth.get()}', '+workshop_build_item', self.vdfloc, '+quit'])
+        print('Finished Upload')
+        self.gui_MainMenu()
 
     def close(self):
         exit()
@@ -81,14 +193,18 @@ class GUI(tk.Tk):
         else:
             print(f'VDF Located: {_file}/{vdf}')
             self.vdfloc = f'{_file}/{vdf}'
-            self.gui_LoadStage2()
+            self.gui_vdfEditor()
 
-    def render(self):
-        for obj in self.objects:
-            obj.pack()
+    def grn_btn(self, *args, **kwargs):
+        return tk.Button(*args, **kwargs, bg='#5f7b4d')
+
+    def render(self, size='800x1000'):
+        self.geometry(size)
+        for row, obj in enumerate(self.objects):
+            obj.grid(row=row, pady=1)
 
     def clear_frame(self):
-        for obj in self.objects:
+        for obj in self.winfo_children():
             obj.destroy()
         self.objects = []
 
@@ -114,14 +230,3 @@ if detected_platform == None:
 
 gui = GUI()
 gui.mainloop()
-
-
-"""
-if detected_platform == 'LINUX':
-    scmd = SteamCMD("./")
-    try:
-        scmd.install()
-    except SteamCMDException:
-        print("Already installed, try to use the --force option to force installation")
-    scmd.login()
-"""
