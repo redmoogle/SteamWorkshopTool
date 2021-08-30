@@ -1,0 +1,5 @@
+/linux32
+*.pyc
+*.vdf
+*.sh
+*.tar.gz

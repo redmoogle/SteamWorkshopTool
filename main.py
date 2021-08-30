@@ -17,6 +17,7 @@ import vdf
 class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.title('Steam Workshop Utility')
         self.objects = []
         self.gui_MainMenu()
         self.vdfloc = ''
@@ -34,7 +35,6 @@ class GUI(tk.Tk):
 
     def gui_MainMenu(self):
         self.clear_frame()
-        self.title = 'Steam Worshop Utility'
         self.objects.append(self.grn_btn(self, text="New Mod", command=self.gui_New, highlightbackground='#72a84f'))
         self.objects.append(self.grn_btn(self, text="Load Mod", command=self.load, highlightbackground='#72a84f'))
         self.objects.append(self.grn_btn(self, text="Exit", command=self.close, highlightbackground='#72a84f'))
@@ -42,7 +42,6 @@ class GUI(tk.Tk):
 
     def gui_vdfEditor(self):
         self.clear_frame()
-        self.title = 'Modify Mod'
         self.data = {}
 
         visibility = {0:"Public", 1:"Friends Only", 2: "Private"}
@@ -121,9 +120,13 @@ class GUI(tk.Tk):
             print('Saved VDF')
             self.gui_vdfEditor()
 
+        def savenup():
+            save()
+            self.gui_Upload()
+
         backb = self.grn_btn(self, text="Back", command=self.gui_MainMenu)
         saveb = self.grn_btn(self, text="Save", command=save)
-        uplb = self.grn_btn(self, text="Upload", command=self.gui_Upload)
+        uplb = self.grn_btn(self, text="Upload", command=savenup)
 
         backb.pack(side=tk.BOTTOM, anchor=tk.E)
         saveb.pack(side=tk.BOTTOM, anchor=tk.E)
@@ -146,8 +149,9 @@ class GUI(tk.Tk):
             self.vdfloc = f'{_moddir}/{_moddir}.vdf'
             self.gui_vdfEditor()
 
-        self.grn_btn(self, text="Create", command=create).grid(row=1)
-        self.render(size='300x300')
+        self.grn_btn(self, text="Create", command=create).place(x=10, y=35)
+        self.grn_btn(command=self.gui_vdfEditor, text='Back').place(x=85, y=35)
+        self.render(size='260x80')
 
     def gui_Upload(self):
         self.clear_frame()
