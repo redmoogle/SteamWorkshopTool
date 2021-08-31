@@ -2,8 +2,8 @@
  Helpful Python tool for uploading/modifying Workshop Items
  
  Requires:
-  - tkinter
-  - vdf
+  - [tkinter](https://docs.python.org/3/library/tkinter.html)
+  - [vdf](https://github.com/ValvePython/vdf)
   
 ![image](https://user-images.githubusercontent.com/20369082/131402972-e8a747b9-48d5-4ab9-ad99-f7832d900665.png) 
  
