@@ -4,7 +4,6 @@ File that runs all the things
 
 import os
 import sys
-from threading import Timer
 import subprocess
 import shutil
 
@@ -107,11 +106,12 @@ class GUI(tk.Tk):
         previewPath.insert(0, self.parsed['previewfile'])
         modPath.insert(0, self.parsed['contentfolder'])
 
+        visibilityMenu.config(width=20, bg='#5f7b4d', highlightbackground='#86c45e')
+
         modDesc.place(x=10, y=30)
         appID.place(x=450, y=30)
         fileID.place(x=450, y=75)
         modTitle.place(x=450, y=120)
-        visibilityMenu.config(width=20, bg='#5f7b4d', highlightbackground='#86c45e')
         visibilityMenu.place(x=450, y=165)
         previewPath.place(x=450, y=225)
         modPath.place(x=450, y=270)
@@ -181,7 +181,13 @@ class GUI(tk.Tk):
         self.geometry('200x120')
 
     def finish(self):
-        subprocess.run([self.scmd.steamcmd_exe, f'+login {self.usr.get()} {self.pwd.get()} {self.auth.get()}', '+workshop_build_item', self.vdfloc, '+quit'])
+        subprocess.run([
+            self.scmd.steamcmd_exe,
+            f'+login {self.usr.get()} {self.pwd.get()} {self.auth.get()}',
+            '+workshop_build_item',
+            self.vdfloc,
+            '+quit'
+        ])
         print('Finished Upload')
         self.gui_MainMenu()
 
@@ -189,24 +195,19 @@ class GUI(tk.Tk):
         exit()
 
     def load(self):
-        file = askdirectory(title='Open Mod Folder', initialdir=".")
-        _file = file # IDK WTF HAPPENS
-        contents = os.listdir(file)
+        fdir = askdirectory(title='Open Mod Folder', initialdir=".")
         vdf = None
-        for file in contents:
+        for file in os.listdir(fdir):
             if file.endswith('.vdf'):
                 vdf = file
-        
-        if vdf == None:
-            print('No VDF Found')
-            widg = tk.Label(text="Failed to locate VDF File", fg="Red", font=("Helvetica", 18))
-            widg.pack()
-            Timer(3, widg.destroy).start()
-
+                break
         else:
-            print(f'VDF Located: {_file}/{vdf}')
-            self.vdfloc = f'{_file}/{vdf}'
-            self.gui_vdfEditor()
+            print('No VDF Found')
+            return
+
+        self.vdfloc = f'{fdir}/{vdf}'
+        print(f'VDF Located: {self.vdfloc}')
+        self.gui_vdfEditor()
 
     def grn_btn(self, *args, **kwargs):
         return tk.Button(*args, **kwargs, bg='#5f7b4d', highlightbackground='#72a84f')
