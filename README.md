@@ -5,9 +5,15 @@
   - [tkinter](https://docs.python.org/3/library/tkinter.html)
   - [vdf](https://github.com/ValvePython/vdf)
   
-![image](https://user-images.githubusercontent.com/20369082/131402972-e8a747b9-48d5-4ab9-ad99-f7832d900665.png) 
- 
-![image](https://user-images.githubusercontent.com/20369082/131402899-9e31a51f-7ea0-40c8-ba12-8b7f351a1d32.png)
 
-![image](https://user-images.githubusercontent.com/20369082/131402995-ae3888fd-370a-400c-a5d5-8f009ab940df.png)
+<details>
+ <summary>Images</summary>
+ <br>
+ 
+ ![image](https://user-images.githubusercontent.com/20369082/132073444-e2705856-a0fd-40c9-a919-abe1bd983ddf.png)
+ ![image](https://user-images.githubusercontent.com/20369082/132073484-ee04faf1-90f1-4772-8031-ed451fa2abd6.png)
+ ![image](https://user-images.githubusercontent.com/20369082/132073508-858c206a-bc3a-437e-a5b2-caca8707ac9d.png)
+ 
+ ![image](https://user-images.githubusercontent.com/20369082/132073461-8dc12495-6989-4e84-9dcc-139d380703d4.png)
+</details>
 
