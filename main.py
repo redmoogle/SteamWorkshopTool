@@ -184,7 +184,7 @@ class GUI(tk.Tk):
 
         self.grn_btn(self, text="Create", command=create, width=12).place(x=5, y=35)
         self.grn_btn(command=self.gui_MainMenu, text='Back', width=12).place(x=128, y=35)
-        self.geometry('260x80')
+        self.geometry('260x70')
 
     def gui_Upload(self):
         self.clear_frame()
@@ -202,7 +202,7 @@ class GUI(tk.Tk):
         tk.Entry(textvariable=self.auth, bg='#ccdae6', highlightbackground='#7598b6').place(x=80, y=55)
         self.grn_btn(command=self.finish, text='Upload', width=15).place(x=5, y=80)
         self.grn_btn(command=self.gui_vdfEditor, text='Back', width=8).place(x=150, y=80)
-        self.geometry('255x120')
+        self.geometry('255x115')
 
     def finish(self):
         subprocess.run([
