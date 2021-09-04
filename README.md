@@ -4,6 +4,7 @@
  Requires:
   - [tkinter](https://docs.python.org/3/library/tkinter.html)
   - [vdf](https://github.com/ValvePython/vdf)
+  - [PIL](https://pillow.readthedocs.io/en/stable/installation.html)
   
 
 <details>

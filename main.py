@@ -8,10 +8,17 @@ import subprocess
 import shutil
 
 import tkinter as tk
+from tkinter.constants import TRUE
 from tkinter.filedialog import askdirectory, askopenfile
 
 from modules import Steamcmd, SteamcmdException
 import vdf
+
+try:
+    from PIL import Image, ImageTk
+    PILMODE = TRUE
+except ModuleNotFoundError:
+    PILMODE = False
 
 class GUI(tk.Tk):
     def __init__(self):
@@ -47,6 +54,9 @@ class GUI(tk.Tk):
         self['bg'] = '#637e94'
         self.title('Steam Workshop Utility')
 
+        # Stored to prevent GC by Tk
+        self.img = None
+
         self.gui_MainMenu()
 
     def gui_MainMenu(self):
@@ -74,10 +84,12 @@ class GUI(tk.Tk):
 
         def saveimg():
             self.imgfile = askopenfile(filetypes=[('JPEG Files', '.jpg')]).name
+            self.imgetn.delete(0, tk.END)
             self.imgetn.insert(0, self.imgfile)
 
         def savemod():
             self.modfile = askopenfile(filetypes=[('Mod File', '*')]).name
+            self.modent.delete(0, tk.END)
             self.modetn.insert(0, self.modfile)
 
         # Workshop Desc
@@ -131,6 +143,14 @@ class GUI(tk.Tk):
         self.modbtn = self.grn_btn(self, text='Browse', width=3, command=savemod)
         self.imgbtn.place(x=490, y=35)
         self.modbtn.place(x=490, y=95)
+
+        # Tkinter will GC it if it's not stored
+        try:
+            if self.parsed['previewfile'] and PILMODE:
+                self.img = ImageTk.PhotoImage(Image.open(self.parsed['previewfile']).resize((144, 144), Image.ANTIALIAS))
+                tk.Button(image=self.img, width=144, height=144).place(x=638, y=170)
+        except FileNotFoundError:
+            pass # Ignore and dont render it
 
         modDesc.place(x=5, y=170)
         appID.place(x=5, y=35, height=30, width=220)
